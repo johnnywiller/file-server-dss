@@ -1,24 +1,20 @@
 package br.furb.dss;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 public class Signer {
 
 	private static Signer instance;
-	private KeyPair pair;
-	// private byte[]
 
 	private Signer() throws NoSuchAlgorithmException {
-
-		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-		keyGen.initialize(2048);
-		this.pair = keyGen.genKeyPair();
 
 	}
 
@@ -34,13 +30,9 @@ public class Signer {
 		return instance;
 	}
 
-	public byte[] getPublicKey() {
-		return pair.getPublic().getEncoded();
-	}
-
 	public byte[] sign(byte[] plainText) throws Exception {
 		Signature privateSignature = Signature.getInstance("SHA256withRSA");
-		privateSignature.initSign(pair.getPrivate());
+		privateSignature.initSign(getServerPrivateKey());
 		privateSignature.update(plainText);
 
 		byte[] signature = privateSignature.sign();
@@ -55,6 +47,16 @@ public class Signer {
 		publicSignature.update(plainText);
 
 		return publicSignature.verify(signature);
+	}
+
+	private PrivateKey getServerPrivateKey() throws Exception {
+
+		byte[] keyBytes = Files.readAllBytes(Paths.get("~/private_key.der"));
+
+		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+		KeyFactory kf = KeyFactory.getInstance("RSA");
+		return kf.generatePrivate(spec);
+
 	}
 
 }

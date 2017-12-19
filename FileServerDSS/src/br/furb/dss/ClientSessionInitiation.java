@@ -30,9 +30,6 @@ public class ClientSessionInitiation {
 
 		System.out.println("STARTING SESSION (Kex process)");
 
-		// request public key from user that we want to talk
-		byte[] pubKey = getServerPrivateKey();
-
 		DHPublicKey publicKey;
 		KeyPair keyPair;
 		byte[] secret;
@@ -46,7 +43,7 @@ public class ClientSessionInitiation {
 		dh.passPublicToServer((DHPublicKey) keyPair.getPublic(), client.getOut());
 
 		// get B (g^b mod p) from the server
-		publicKey = dh.getServerPublic(client.getIn(), pubKey);
+		publicKey = dh.getServerPublic(client.getIn());
 
 		System.out.println("DH Public Key RECEIVED");
 
@@ -67,11 +64,6 @@ public class ClientSessionInitiation {
 		ClientKeys keys = new ClientKeys(symmetricKey, macKey);
 
 		return keys;
-	}
-
-	private byte[] getServerPrivateKey() {
-
-		return null;
 	}
 
 }

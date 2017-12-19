@@ -48,7 +48,7 @@ public class DiffieHellmanUitls {
 		out.flush();
 	}
 
-	public DHPublicKey getServerPublic(ObjectInputStream in, byte[] pubKey) throws Exception {
+	public DHPublicKey getServerPublic(ObjectInputStream in) throws Exception {
 
 		KeyFactory factory = KeyFactory.getInstance("DH");
 

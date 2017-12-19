@@ -33,6 +33,8 @@ public class ClientThread extends Thread {
 				EncryptedMessage received = (EncryptedMessage) thisClient.getIn().readObject();
 
 				String msg = encryptor.decryptMessage(received);
+				
+				System.out.println(msg);
 
 			}
 
