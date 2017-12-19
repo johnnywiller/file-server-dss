@@ -48,9 +48,9 @@ public class ClientThread extends Thread {
 				try {
 
 					msg = encryptor.decryptMessage(received);
-					
+
 					System.out.println("Message: " + msg);
-					
+
 					parsePacket(msg);
 
 				} catch (Exception e) {
@@ -92,7 +92,7 @@ public class ClientThread extends Thread {
 		switch (tokenized[0]) {
 
 		case "/login":
-			
+
 			if (tokenized.length < 3) {
 
 				String msg = "Sintaxe invalida, digite /login <user> <pass>";
@@ -149,16 +149,34 @@ public class ClientThread extends Thread {
 			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
 
 			thisClient.enviar(encMsg);
-			
+
 			logged = true;
 		}
 
 	}
 
-	private void addUser(String user, String pass) {
-		
-		
-		
+	private void addUser(String user, String pass) throws Exception {
+
+		try {
+
+			userDAO.addUser(user, pass);
+
+			String msg = "Usuario cadastrado com sucesso! faca login para utilizar os servicos";
+
+			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
+
+		} catch (Exception e) {
+
+			String msg = "Erro ao cadastrar: " + e.getMessage();
+
+			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
+
+		}
+
 	}
 
 	private String getPermissionsAsString(String user) throws SQLException {

@@ -2,6 +2,7 @@ package br.furb.dss.db;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +17,72 @@ public class UserDAO {
 
 	public UserDAO() throws NoSuchAlgorithmException {
 		this.sha256 = MessageDigest.getInstance("SHA-256");
+	}
+
+	private boolean checkPasswordStrength(String pass) {
+		return pass.matches("^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8}$");
+	}
+
+	public void addUser(String user, String pass) throws Exception {
+
+		if (user == null || pass == null || user.trim().isEmpty() || pass.trim().isEmpty())
+			throw new Exception("Usuario e/ou senha nao podem estar em braco");
+
+		if (!checkPasswordStrength(pass)) {
+			throw new Exception("Senha nao atende aos requisitos minimos:\n" + "2 letra maiusculas\n"
+					+ "1 caractere especial\n" + "2 numeros\n" + "3 letras minusculas\n" + "Comprimento 8");
+		}
+
+		// verify if exists a hash with this user, if yes user can't be added twice
+		byte[] hash = getHash(user);
+
+		if (hash != null)
+			throw new Exception("Usuario ja existente, por favor digite outro");
+
+		byte[] salt = generateSalt();
+		byte[] hashed = getHashedPass(pass, salt);
+		byte[] fileSalt = generateSalt();
+		long permissions = 0;
+
+		String signature = "dummy signature";
+
+		String baseSalt = Base64.getEncoder().encodeToString(salt);
+		String baseHashed = Base64.getEncoder().encodeToString(hashed);
+		String baseFileSalt = Base64.getEncoder().encodeToString(fileSalt);
+
+		PreparedStatement st = Connection.getInstance().getConnection()
+				.prepareStatement("insert into users values (?,?,?,?,?,?)");
+
+		st.setString(1, user);
+		st.setString(2, baseHashed);
+		st.setString(3, baseSalt);
+		st.setString(4, baseFileSalt);
+		st.setLong(5, permissions);
+		st.setString(6, signature);
+
+	}
+
+	private byte[] generateSalt() {
+
+		byte[] salt = new byte[32];
+
+		new SecureRandom().nextBytes(salt);
+
+		return salt;
+	}
+
+	private byte[] getHashedPass(String pass, byte[] salt) {
+
+		byte[] hashedPass = sha256.digest(pass.getBytes());
+		byte[] concatHashes = new byte[64];
+
+		for (int i = 0; i < HASH_ROUNDS; i++) {
+			System.arraycopy(hashedPass, 0, concatHashes, 0, hashedPass.length);
+			System.arraycopy(salt, 0, concatHashes, hashedPass.length, salt.length);
+
+			hashedPass = sha256.digest(concatHashes);
+		}
+		return hashedPass;
 	}
 
 	public boolean login(String user, String pass) throws NoSuchAlgorithmException {
@@ -35,20 +102,7 @@ public class UserDAO {
 			if (hash == null)
 				return false;
 
-			byte[] hashedPass = sha256.digest(pass.getBytes());
-
-			byte[] concatHashes = new byte[64];
-
-			for (int i = 0; i < HASH_ROUNDS; i++) {
-
-				System.arraycopy(hashedPass, 0, concatHashes, 0, hashedPass.length);
-				System.arraycopy(salt, 0, concatHashes, hashedPass.length, salt.length);
-
-				hashedPass = sha256.digest(hashedPass);
-
-			}
-
-			return Arrays.equals(hash, hashedPass);
+			return Arrays.equals(hash, getHashedPass(pass, salt));
 
 		} catch (SQLException e) {
 			e.printStackTrace();
