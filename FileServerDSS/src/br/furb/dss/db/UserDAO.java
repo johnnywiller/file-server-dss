@@ -59,7 +59,9 @@ public class UserDAO {
 		st.setString(4, baseFileSalt);
 		st.setLong(5, permissions);
 		st.setString(6, signature);
-
+		
+		st.executeUpdate();
+		
 	}
 
 	private byte[] generateSalt() {
