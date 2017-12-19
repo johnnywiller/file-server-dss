@@ -9,7 +9,7 @@ public class RolesDAO {
 	public long getPermissions(String user) throws SQLException {
 
 		PreparedStatement st = Connection.getInstance().getConnection()
-				.prepareStatement("select permissions from users = ?");
+				.prepareStatement("select permissions from users where name = ?");
 
 		st.setString(1, user);
 
