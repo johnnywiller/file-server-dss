@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import br.furb.dss.db.RolesDAO;
-import br.furb.dss.db.User;
 import br.furb.dss.db.UserDAO;
 
 public class ClientThread extends Thread {
