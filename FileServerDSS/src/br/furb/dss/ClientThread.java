@@ -17,6 +17,7 @@ public class ClientThread extends Thread {
 	private RolesDAO rolesDAO;
 
 	private boolean logged = false;
+	private String activeUser = "";
 
 	public ClientThread(SocketClient client) throws Exception {
 		this.thisClient = client;
@@ -37,7 +38,7 @@ public class ClientThread extends Thread {
 			String welcome = "Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos\n";
 			welcome += "Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
 					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
-					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n";
+					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n" + "/quit";
 
 			EncryptedMessage encMsg = encryptor.encryptedMessage(welcome);
 
@@ -90,15 +91,18 @@ public class ClientThread extends Thread {
 
 		String[] tokenized = received.split(" ");
 
+		String msg;
+		EncryptedMessage encMsg;
+
 		switch (tokenized[0]) {
 
 		case "/login":
 
 			if (tokenized.length < 3) {
 
-				String msg = "Sintaxe invalida, digite /login <user> <pass>";
+				msg = "Sintaxe invalida, digite /login <user> <pass>";
 
-				EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+				encMsg = encryptor.encryptedMessage(msg);
 
 				thisClient.enviar(encMsg);
 
@@ -112,9 +116,9 @@ public class ClientThread extends Thread {
 
 			if (tokenized.length < 3) {
 
-				String msg = "Sintaxe invalida, digite /adduser <user> <pass>";
+				msg = "Sintaxe invalida, digite /adduser <user> <pass>";
 
-				EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+				encMsg = encryptor.encryptedMessage(msg);
 
 				thisClient.enviar(encMsg);
 
@@ -125,13 +129,29 @@ public class ClientThread extends Thread {
 			addUser(tokenized[1], tokenized[2]);
 			break;
 
+		case "/write":
+			if (requireLogin()) {
+				
+				
+				
+			}
+			break;
 		case "/help":
 
-			String msg = "Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
+			msg = "Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
 					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
-					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n";
+					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n" + "/quit";
 
-			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+			encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
+
+			break;
+
+		default:
+			msg = "Comando invalido, digite /help para ver os comandos possiveis";
+
+			encMsg = encryptor.encryptedMessage(msg);
 
 			thisClient.enviar(encMsg);
 
@@ -139,6 +159,21 @@ public class ClientThread extends Thread {
 
 		}
 
+	}
+
+	private boolean requireLogin() throws Exception {
+
+		if (!logged) {
+
+			String msg = "Esta operacao exige que voce esteja logado, por favor faca login primeiro";
+
+			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
+
+			return false;
+		}
+		return true;
 	}
 
 	private void doLogin(String user, String pass) throws Exception {
@@ -196,5 +231,7 @@ public class ClientThread extends Thread {
 		long permissions = rolesDAO.getPermissions(user);
 		return Permissions.getRolesFriendly(permissions);
 	}
-
+	
+	
+	
 }
