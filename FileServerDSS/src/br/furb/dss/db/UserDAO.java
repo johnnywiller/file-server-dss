@@ -22,6 +22,9 @@ public class UserDAO {
 
 		try {
 
+			if (user == null || pass == null || user.trim().isEmpty() || pass.trim().isEmpty())
+				return false;
+
 			byte[] salt = getSalt(user);
 
 			if (salt == null)

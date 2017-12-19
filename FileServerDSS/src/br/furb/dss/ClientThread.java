@@ -1,7 +1,6 @@
 package br.furb.dss;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 
 import br.furb.dss.db.RolesDAO;
 import br.furb.dss.db.UserDAO;
@@ -32,7 +31,7 @@ public class ClientThread extends Thread {
 			this.userDAO = new UserDAO();
 			this.rolesDAO = new RolesDAO();
 
-			String welcome = "Seja bem vindo, por favor faca login para utilizar os servicos";
+			String welcome = "Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos";
 
 			EncryptedMessage encMsg = encryptor.encryptedMessage(welcome);
 
@@ -41,11 +40,23 @@ public class ClientThread extends Thread {
 			while (true) {
 
 				EncryptedMessage received = (EncryptedMessage) thisClient.getIn().readObject();
+				String msg;
 
-				String msg = encryptor.decryptMessage(received);
+				try {
 
-				System.out.println(msg);
+					msg = encryptor.decryptMessage(received);
 
+					parsePacket(msg);
+
+				} catch (Exception e) {
+
+					encMsg = encryptor.encryptedMessage("Erro: " + e.getMessage());
+
+					System.out.println("Erro: " + e.getMessage());
+
+					thisClient.enviar(encMsg);
+
+				}
 			}
 
 		} catch (Exception e1) {
@@ -64,7 +75,7 @@ public class ClientThread extends Thread {
 
 	}
 
-	private void parsePacket(String received) throws IOException, ClassNotFoundException, InterruptedException {
+	private void parsePacket(String received) throws Exception {
 
 		if (received == null || received.isEmpty())
 			return;
@@ -74,7 +85,7 @@ public class ClientThread extends Thread {
 		switch (tokenized[0]) {
 
 		case "/login":
-
+			doLogin(tokenized[1], tokenized[2]);
 		}
 
 	}
@@ -92,6 +103,15 @@ public class ClientThread extends Thread {
 			thisClient.enviar(encMsg);
 
 			return;
+
+		} else {
+
+			String msg = "Usuario ou senha invalidos, caso deseja cadastrar um novo usuario digite /adduser <user> <pass>";
+
+			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
+
 		}
 
 	}
