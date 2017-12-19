@@ -66,6 +66,9 @@ public class UserDAO {
 
 		ResultSet rs = st.executeQuery();
 
+		if (!rs.next())
+			return null;
+
 		String salt = rs.getString(1);
 
 		if (salt == null)
@@ -85,6 +88,9 @@ public class UserDAO {
 		st.setString(1, user);
 
 		ResultSet rs = st.executeQuery();
+
+		if (!rs.next())
+			return null;
 
 		String hash = rs.getString(1);
 
