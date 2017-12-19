@@ -45,11 +45,13 @@ public class ClientThread extends Thread {
 
 				EncryptedMessage received = (EncryptedMessage) thisClient.getIn().readObject();
 				String msg;
-
+				System.out.println("leu");
 				try {
 
 					msg = encryptor.decryptMessage(received);
+					
 					System.out.println("Message: " + msg);
+					
 					parsePacket(msg);
 
 				} catch (Exception e) {
@@ -143,7 +145,7 @@ public class ClientThread extends Thread {
 
 		} else {
 
-			String msg = "Você esta autenticado!\nSuas permissoes sao:\n" + getPermissionsAsString(user);
+			String msg = "Voce esta autenticado!\nSuas permissoes sao:\n" + getPermissionsAsString(user);
 
 			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
 
