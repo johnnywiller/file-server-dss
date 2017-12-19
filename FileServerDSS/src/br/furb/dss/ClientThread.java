@@ -34,7 +34,10 @@ public class ClientThread extends Thread {
 			this.userDAO = new UserDAO();
 			this.rolesDAO = new RolesDAO();
 
-			String welcome = "Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos";
+			String welcome = "Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos\n";
+			welcome += "Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
+					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
+					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n";
 
 			EncryptedMessage encMsg = encryptor.encryptedMessage(welcome);
 
@@ -44,12 +47,10 @@ public class ClientThread extends Thread {
 
 				EncryptedMessage received = (EncryptedMessage) thisClient.getIn().readObject();
 				String msg;
-				System.out.println("leu");
+
 				try {
 
 					msg = encryptor.decryptMessage(received);
-
-					System.out.println("Message: " + msg);
 
 					parsePacket(msg);
 
@@ -122,6 +123,18 @@ public class ClientThread extends Thread {
 			}
 
 			addUser(tokenized[1], tokenized[2]);
+			break;
+
+		case "/help":
+
+			String msg = "Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
+					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
+					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n";
+
+			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
+
 			break;
 
 		}
