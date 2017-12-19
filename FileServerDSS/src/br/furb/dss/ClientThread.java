@@ -49,7 +49,7 @@ public class ClientThread extends Thread {
 				try {
 
 					msg = encryptor.decryptMessage(received);
-
+					System.out.println("Message: " + msg);
 					parsePacket(msg);
 
 				} catch (Exception e) {
@@ -91,7 +91,7 @@ public class ClientThread extends Thread {
 		switch (tokenized[0]) {
 
 		case "/login":
-
+			
 			if (tokenized.length < 3) {
 
 				String msg = "Sintaxe invalida, digite /login <user> <pass>";
@@ -155,7 +155,9 @@ public class ClientThread extends Thread {
 	}
 
 	private void addUser(String user, String pass) {
-
+		
+		
+		
 	}
 
 	private String getPermissionsAsString(String user) throws SQLException {
