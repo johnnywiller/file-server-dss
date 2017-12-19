@@ -51,7 +51,7 @@ public class Signer {
 
 	private PrivateKey getServerPrivateKey() throws Exception {
 
-		byte[] keyBytes = Files.readAllBytes(Paths.get("~/private_key.der"));
+		byte[] keyBytes = Files.readAllBytes(Paths.get("/home/ec2-user/private_key.der"));
 
 		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
 		KeyFactory kf = KeyFactory.getInstance("RSA");
