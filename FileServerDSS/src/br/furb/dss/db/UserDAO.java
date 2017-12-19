@@ -51,7 +51,9 @@ public class UserDAO {
 		String baseFileSalt = Base64.getEncoder().encodeToString(fileSalt);
 
 		PreparedStatement st = Connection.getInstance().getConnection()
-				.prepareStatement("insert into users values (?,?,?,?,?,?)");
+				.prepareStatement("insert into users "
+						+ "(name,hash_pass,salt,file_salt,permissions,signature_row)"
+						+ " values (?,?,?,?,?,?)");
 
 		st.setString(1, user);
 		st.setString(2, baseHashed);
