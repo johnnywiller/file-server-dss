@@ -30,7 +30,8 @@ public class Connection {
 			ds.setUser("root");
 			ds.setPassword("dssfurb");
 			ds.setServerName("localhost");
-
+			ds.setDatabaseName("fileserver");
+			
 			this.conn = ds.getConnection();
 		}
 		
