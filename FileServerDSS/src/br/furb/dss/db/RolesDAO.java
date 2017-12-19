@@ -1,22 +1,25 @@
 package br.furb.dss.db;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class RolesDAO {
 
-	public long getPermissions(Integer id) throws SQLException {
+	public long getPermissions(String user) throws SQLException {
 
-		Statement st = Connection.getInstance().getConnection().createStatement();
+		PreparedStatement st = Connection.getInstance().getConnection()
+				.prepareStatement("select permissions from users = ?");
 
-		ResultSet rs = st.executeQuery("Select permissions from user_permissions where id =" + id);
+		st.setString(1, user);
 
-		long permissions = rs.getLong(0);
-		
-		rs.close();
-		st.close();
-		
+		ResultSet rs = st.executeQuery();
+
+		if (!rs.next())
+			return 0;
+
+		long permissions = rs.getLong(1);
+
 		return permissions;
 	}
 

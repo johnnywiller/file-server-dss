@@ -1,8 +1,10 @@
 package br.furb.dss;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import br.furb.dss.db.RolesDAO;
+import br.furb.dss.db.User;
 import br.furb.dss.db.UserDAO;
 
 public class ClientThread extends Thread {
@@ -14,6 +16,8 @@ public class ClientThread extends Thread {
 
 	private UserDAO userDAO;
 	private RolesDAO rolesDAO;
+
+	private boolean logged = false;
 
 	public ClientThread(SocketClient client) throws Exception {
 		this.thisClient = client;
@@ -50,6 +54,8 @@ public class ClientThread extends Thread {
 
 				} catch (Exception e) {
 
+					e.printStackTrace();
+
 					encMsg = encryptor.encryptedMessage("Erro: " + e.getMessage());
 
 					System.out.println("Erro: " + e.getMessage());
@@ -85,7 +91,38 @@ public class ClientThread extends Thread {
 		switch (tokenized[0]) {
 
 		case "/login":
+
+			if (tokenized.length < 3) {
+
+				String msg = "Sintaxe invalida, digite /login <user> <pass>";
+
+				EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+				thisClient.enviar(encMsg);
+
+				break;
+			}
+
 			doLogin(tokenized[1], tokenized[2]);
+			break;
+
+		case "/adduser":
+
+			if (tokenized.length < 3) {
+
+				String msg = "Sintaxe invalida, digite /adduser <user> <pass>";
+
+				EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+				thisClient.enviar(encMsg);
+
+				break;
+
+			}
+
+			addUser(tokenized[1], tokenized[2]);
+			break;
+
 		}
 
 	}
@@ -106,14 +143,24 @@ public class ClientThread extends Thread {
 
 		} else {
 
-			String msg = "Usuario ou senha invalidos, caso deseja cadastrar um novo usuario digite /adduser <user> <pass>";
+			String msg = "Você esta autenticado!\nSuas permissoes sao:\n" + getPermissionsAsString(user);
 
 			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
 
 			thisClient.enviar(encMsg);
-
+			
+			logged = true;
 		}
 
+	}
+
+	private void addUser(String user, String pass) {
+
+	}
+
+	private String getPermissionsAsString(String user) throws SQLException {
+		long permissions = rolesDAO.getPermissions(user);
+		return Permissions.getRolesFriendly(permissions);
 	}
 
 }
