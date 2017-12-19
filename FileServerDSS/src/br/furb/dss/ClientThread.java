@@ -10,9 +10,7 @@ public class ClientThread extends Thread {
 	private ClientKeys keys;
 
 	public ClientThread(SocketClient client) throws Exception {
-		this.thisClient = client;
-
-		this.encryptor = new MessageEncryptor(keys);
+		this.thisClient = client;	
 	}
 
 	@Override
@@ -22,6 +20,8 @@ public class ClientThread extends Thread {
 
 			keys = ClientSessionInitiation.getInstance(thisClient).startSession();
 
+			this.encryptor = new MessageEncryptor(keys);
+			
 			String welcome = "Seja bem vindo, por favor faca login para utilizar os servicos";
 
 			EncryptedMessage encMsg = encryptor.encryptedMessage(welcome);
