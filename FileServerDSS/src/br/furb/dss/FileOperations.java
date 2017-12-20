@@ -102,9 +102,8 @@ public class FileOperations {
 			decryptedContent = cipher.doFinal(content);
 
 		} catch (Exception e) {
-			//throw new Exception("Nao foi possivel descriptografar o arquivo."
-			//		+ "\nProvavelmente o arquivo foi alterado ou esta corrompido!" );
-			throw e;
+			throw new Exception("Nao foi possivel descriptografar o arquivo."
+					+ "\nProvavelmente o arquivo foi alterado ou esta corrompido!" );		
 		}
 
 		if (!checkFileIntegrity(hash, iv, decryptedContent)) {

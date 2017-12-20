@@ -6,6 +6,7 @@ public class Permissions {
 	public final static long REMOVE_OTHERS_DIR = 0b10;
 	public final static long REMOVE_USER = 0b100;
 	public final static long CHANGE_OTHER_PERMISSIONS = 0b1000;
+	public final static long READ_OTHERS_PERM = 0b10000;
 	
 	public static String getRolesFriendly(long permissions) {
 		
@@ -22,6 +23,10 @@ public class Permissions {
 		
 		if ((permissions & CHANGE_OTHER_PERMISSIONS) != 0)
 			rolesFriendly += " | Modificar permissoes dos outros";
+		
+		if ((permissions & READ_OTHERS_PERM) != 0)
+			rolesFriendly += " | Ler as permissoes dos outros";
+		
 		
 		return rolesFriendly;
 	}

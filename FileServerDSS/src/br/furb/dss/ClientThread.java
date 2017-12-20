@@ -161,6 +161,20 @@ public class ClientThread extends Thread {
 				send(msg);
 			}
 			break;
+
+		case "/lsperm":
+			if (requireLogin()) {
+
+				if (tokenized.length > 1 && !tokenized[1].equalsIgnoreCase(this.activeUser)
+						&& !requiredPermission(Permissions.READ_OTHERS_PERM))
+					break;
+
+				send("As permissoes sao:\n");
+				send(getPermissionsAsString(tokenized.length < 2 ? this.activeUser : tokenized[1]));
+
+			}
+
+			break;
 		case "/help":
 			send("Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
 					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
