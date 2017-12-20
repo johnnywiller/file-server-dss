@@ -40,7 +40,7 @@ public class FileOperations {
 	}
 	
 	public boolean createDir(String user) {
-		return new File(baseDir + "user").mkdir();
+		return new File(baseDir + user).mkdir();
 	}
 	
 	public boolean createFile(String filename, String content) {

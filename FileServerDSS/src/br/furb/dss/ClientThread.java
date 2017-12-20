@@ -143,8 +143,8 @@ public class ClientThread extends Thread {
 				if (tokenized.length > 1 && !tokenized[1].equalsIgnoreCase(this.activeUser)
 						&& !requiredPermission(Permissions.READ_OTHERS_DIR))
 					break;
-				
-				List<String> files = this.fileOp.lsDir(tokenized[1]);
+
+				List<String> files = this.fileOp.lsDir(tokenized.length < 2 ? null : tokenized[1]);
 
 				if (files == null || files.isEmpty())
 					msg = "Nenhum arquivo encontrado";
@@ -167,6 +167,16 @@ public class ClientThread extends Thread {
 
 			thisClient.enviar(encMsg);
 
+			break;
+
+		case "/quit":
+			this.activeUser = "";
+			this.logged = false;
+
+			msg = "Goodbye...";
+			encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
 			break;
 
 		default:
@@ -239,8 +249,9 @@ public class ClientThread extends Thread {
 			this.activeUser = user;
 			// create the file operations handler
 			loadFileKeys(pass);
-			
-			// tries to create user dir and send a message, if dir is already created from previous login, then no message is sended
+
+			// tries to create user dir and send a message, if dir is already created from
+			// previous login, then no message is sended
 			createInitialDir();
 
 		}
