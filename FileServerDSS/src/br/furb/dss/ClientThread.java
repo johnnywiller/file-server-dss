@@ -37,9 +37,7 @@ public class ClientThread extends Thread {
 			this.rolesDAO = new RolesDAO();
 
 			send("Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos\n");
-			send("Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
-					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles < - | user>\n" + "/lsusers\n"
-					+ "/removeuser\n" + "/lsperm < - | user>\n" + "/help\n" + "/quit");
+			sendHelp();
 
 			while (true) {
 
@@ -86,7 +84,6 @@ public class ClientThread extends Thread {
 		String[] tokenized = received.trim().split(" ");
 
 		String msg;
-		EncryptedMessage encMsg;
 
 		switch (tokenized[0]) {
 
@@ -188,10 +185,7 @@ public class ClientThread extends Thread {
 			break;
 			
 		case "/help":
-			send("Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
-					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
-					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n" + "/quit");
-
+			sendHelp();
 			break;
 
 		case "/quit":
@@ -265,13 +259,30 @@ public class ClientThread extends Thread {
 			send("Erro ao cadastrar: " + e.getMessage());
 		}
 	}
-
+	
 	private void createInitialDir() throws Exception {
 		if (fileOp.createDir(activeUser)) {
 			send("Seu espaco de armazenamento em nuvem foi criado com sucesso!");
 		}
 	}
-
+	private void sendHelp() throws Exception {
+		
+		send("Os comandos sao:\n" + 
+				"/adduser user pass\t--adds an user\n" +
+				"/login user pass\t--login as user\n" +
+				"/write filename content\t--create file (or append if it exists), inserting some content\n" +
+				"/read filename\t--read content of file\n" +
+				"/lsfiles [user]\t--list files of specified user, if no user specified then list own logged user files\n" +
+				"/lsusers\t--list registered users in the system\n" +
+				"/rmuser [user]\t--remove a specified user, if no user specified then remove own logged user\n" +
+				"/lsperm [user]\t--list permissions of a specified user, if no user specified then list own logged user permissions\n" +
+				"/setperm user perm\t--set permission to a user (/descperms to view possible permissions)\n" +
+				"/rmperm user perm\t--remove permission of specified user (/descperms to view possible permissions)\n" +
+				"/descperms\t--list all possible permissions that can be assigned to users\n" +
+				"/help\t--print this screen\n" +
+				"/quit\t--leaves the system");
+		
+	}
 	private String getPermissionsAsString(String user) throws SQLException {
 		long permissions = rolesDAO.getPermissions(user);
 		return Permissions.getRolesFriendly(permissions);

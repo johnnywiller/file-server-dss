@@ -8,20 +8,24 @@ import java.security.spec.KeySpec;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.mysql.fabric.xmlrpc.base.Array;
+
 public class UserDAO {
 
 	private final int HASH_ROUNDS = 70_000;
 	private static final int ITERATION_COUNT = 65536;
 	private static final int KEY_LENGTH = 256;
-	
+
 	MessageDigest sha256;
 
 	public UserDAO() throws NoSuchAlgorithmException {
@@ -59,10 +63,8 @@ public class UserDAO {
 		String baseHashed = Base64.getEncoder().encodeToString(hashed);
 		String baseFileSalt = Base64.getEncoder().encodeToString(fileSalt);
 
-		PreparedStatement st = Connection.getInstance().getConnection()
-				.prepareStatement("insert into users "
-						+ "(name,hash_pass,salt,file_salt,permissions,signature_row)"
-						+ " values (?,?,?,?,?,?)");
+		PreparedStatement st = Connection.getInstance().getConnection().prepareStatement("insert into users "
+				+ "(name,hash_pass,salt,file_salt,permissions,signature_row)" + " values (?,?,?,?,?,?)");
 
 		st.setString(1, user);
 		st.setString(2, baseHashed);
@@ -70,20 +72,20 @@ public class UserDAO {
 		st.setString(4, baseFileSalt);
 		st.setLong(5, permissions);
 		st.setString(6, signature);
-		
+
 		st.executeUpdate();
-		
+
 	}
 
 	public byte[] getFileOpKeys(String user, String pass) throws Exception {
-		
+
 		byte[] fileSalt = getFileSalt(user);
-		
+
 		byte[] fileOpKey = getPBDKFkey(pass, fileSalt);
-		
+
 		return fileOpKey;
 	}
-	
+
 	private byte[] generateSalt() {
 
 		byte[] salt = new byte[32];
@@ -108,15 +110,15 @@ public class UserDAO {
 	}
 
 	private byte[] getPBDKFkey(String pass, byte[] fileSalt) throws NoSuchAlgorithmException, InvalidKeySpecException {
-		
+
 		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 		KeySpec spec = new PBEKeySpec(pass.toCharArray(), fileSalt, ITERATION_COUNT, KEY_LENGTH);
 		SecretKey tmp = factory.generateSecret(spec);
 		SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
-		
+
 		return secret.getEncoded();
 	}
-	
+
 	public boolean login(String user, String pass) throws NoSuchAlgorithmException {
 
 		try {
@@ -143,6 +145,21 @@ public class UserDAO {
 
 	}
 
+	public List<String> listUsers() throws SQLException {
+
+		List<String> users = new ArrayList<String>();
+
+		PreparedStatement st = Connection.getInstance().getConnection().prepareStatement("Select name from users");
+
+		ResultSet rs = st.executeQuery();
+
+		while (rs.next()) {
+			users.add(rs.getString(1));
+		}
+
+		return users;
+	}
+
 	private byte[] getFileSalt(String user) throws SQLException {
 
 		PreparedStatement st = Connection.getInstance().getConnection()
@@ -166,7 +183,6 @@ public class UserDAO {
 
 	}
 
-	
 	private byte[] getSalt(String user) throws SQLException {
 
 		PreparedStatement st = Connection.getInstance().getConnection()
