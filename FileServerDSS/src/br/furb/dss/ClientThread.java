@@ -140,7 +140,7 @@ public class ClientThread extends Thread {
 			if (requireLogin()) {
 
 				// check if this user is trying to view other user dir without permission
-				if (tokenized[1] != null && !tokenized[1].equalsIgnoreCase(this.activeUser)
+				if (tokenized.length > 1 && !tokenized[1].equalsIgnoreCase(this.activeUser)
 						&& !requiredPermission(Permissions.READ_OTHERS_DIR))
 					break;
 				
