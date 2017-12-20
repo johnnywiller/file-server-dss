@@ -36,14 +36,10 @@ public class ClientThread extends Thread {
 			this.userDAO = new UserDAO();
 			this.rolesDAO = new RolesDAO();
 
-			String welcome = "Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos\n";
-			welcome += "Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
+			send("Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos\n");
+			send("Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
 					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles < - | user>\n" + "/lsusers\n"
-					+ "/removeuser\n" + "/lsperm < - | user>\n" + "/help\n" + "/quit";
-
-			EncryptedMessage encMsg = encryptor.encryptedMessage(welcome);
-
-			thisClient.enviar(encMsg);
+					+ "/removeuser\n" + "/lsperm < - | user>\n" + "/help\n" + "/quit");
 
 			while (true) {
 
@@ -60,11 +56,9 @@ public class ClientThread extends Thread {
 
 					e.printStackTrace();
 
-					encMsg = encryptor.encryptedMessage("Erro: " + e.getMessage());
+					send("Erro: " + e.getMessage());
 
 					System.out.println("Erro: " + e.getMessage());
-
-					thisClient.enviar(encMsg);
 
 				}
 			}
@@ -82,7 +76,6 @@ public class ClientThread extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	private void parsePacket(String received) throws Exception {
@@ -100,31 +93,17 @@ public class ClientThread extends Thread {
 		case "/login":
 
 			if (tokenized.length < 3) {
-
-				msg = "Sintaxe invalida, digite /login <user> <pass>";
-
-				encMsg = encryptor.encryptedMessage(msg);
-
-				thisClient.enviar(encMsg);
-
+				send("Sintaxe invalida, digite /login <user> <pass>");
 				break;
 			}
-
 			doLogin(tokenized[1], tokenized[2]);
 			break;
 
 		case "/adduser":
 
 			if (tokenized.length < 3) {
-
-				msg = "Sintaxe invalida, digite /adduser <user> <pass>";
-
-				encMsg = encryptor.encryptedMessage(msg);
-
-				thisClient.enviar(encMsg);
-
+				send("Sintaxe invalida, digite /adduser <user> <pass>");
 				break;
-
 			}
 
 			addUser(tokenized[1], tokenized[2]);
@@ -132,6 +111,34 @@ public class ClientThread extends Thread {
 
 		case "/write":
 			if (requireLogin()) {
+
+				if (tokenized.length < 3) {
+					send("Sintaxe invalida, digite /write <filename> <content>");
+					break;
+				}
+
+				boolean result = fileOp.createOrUpdateFile(tokenized[1], tokenized[2]);
+
+				if (result) {
+					send("Arquivo gravado com sucesso!");
+				} else {
+					send("Algum erro desconhecido ocorreu , contate o suporte.");
+				}
+			}
+			break;
+
+		case "/read":
+			if (requireLogin()) {
+
+				if (tokenized.length < 2) {
+					send("Sintaxe invalida, digite /read <filename>");
+					break;
+				}
+
+				String content = fileOp.readFile(tokenized[1]);
+
+				send("O conteudo do arquivo eh:\n\n");
+				send(content);
 
 			}
 			break;
@@ -151,57 +158,38 @@ public class ClientThread extends Thread {
 				else
 					msg = "Os arquivos sao:\n" + String.join("\n", files);
 
-				encMsg = encryptor.encryptedMessage(msg);
-
-				thisClient.enviar(encMsg);
+				send(msg);
 			}
-
 			break;
 		case "/help":
-
-			msg = "Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
+			send("Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
 					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
-					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n" + "/quit";
-
-			encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
+					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n" + "/quit");
 
 			break;
 
 		case "/quit":
-			this.activeUser = "";
-			this.logged = false;
-
-			msg = "Goodbye...";
-			encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
+			if (requireLogin()) {
+				this.activeUser = "";
+				this.logged = false;
+				send("Goodbye...");
+			}
 			break;
-
 		default:
-			msg = "Comando invalido, digite /help para ver os comandos possiveis";
-
-			encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
-
+			send("Comando invalido, digite /help para ver os comandos possiveis");
 			break;
-
 		}
+	}
 
+	private void send(String msg) throws Exception {
+		EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+		thisClient.enviar(encMsg);
 	}
 
 	private boolean requiredPermission(long required) throws SQLException, IOException, Exception {
 
 		if (!Permissions.checkPermission(rolesDAO.getPermissions(this.activeUser), required)) {
-
-			String msg = "Voce nao tem permissao para este tipo de acesso!";
-
-			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
-
+			send("Voce nao tem permissao para este tipo de acesso!");
 			return false;
 		}
 		return true;
@@ -210,13 +198,7 @@ public class ClientThread extends Thread {
 	private boolean requireLogin() throws Exception {
 
 		if (!logged) {
-
-			String msg = "Esta operacao exige que voce esteja logado, por favor faca login primeiro";
-
-			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
-
+			send("Esta operacao exige que voce esteja logado, por favor faca login primeiro");
 			return false;
 		}
 		return true;
@@ -225,25 +207,13 @@ public class ClientThread extends Thread {
 	private void doLogin(String user, String pass) throws Exception {
 
 		boolean logged = userDAO.login(user, pass);
-
 		if (!logged) {
-
-			String msg = "Usuario ou senha invalidos, caso deseja cadastrar um novo usuario digite /adduser <user> <pass>";
-
-			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
-
+			send("Usuario ou senha invalidos, caso deseja cadastrar um novo usuario digite /adduser <user> <pass>");
 			return;
-
 		} else {
 
-			String msg = "Voce esta autenticado!\nSua chave criptografica acaba de ser gerada em runtime\n\nSuas permissoes sao:\n"
-					+ getPermissionsAsString(user);
-
-			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
+			send("Voce esta autenticado!\nSua chave criptografica acaba de ser gerada em runtime\n\nSuas permissoes sao:\n"
+					+ getPermissionsAsString(user));
 
 			this.logged = true;
 			this.activeUser = user;
@@ -253,53 +223,26 @@ public class ClientThread extends Thread {
 			// tries to create user dir and send a message, if dir is already created from
 			// previous login, then no message is sended
 			createInitialDir();
-
 		}
-
 	}
 
 	private void loadFileKeys(String pass) throws Exception {
-
 		byte[] key = this.userDAO.getFileOpKeys(activeUser, pass);
-
 		this.fileOp = new FileOperations(key, activeUser);
-
 	}
 
 	private void addUser(String user, String pass) throws Exception {
-
 		try {
-
 			userDAO.addUser(user, pass);
-
-			String msg = "Usuario cadastrado com sucesso! faca login para utilizar os servicos";
-
-			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
-
+			send("Usuario cadastrado com sucesso! faca login para utilizar os servicos");
 		} catch (Exception e) {
-
-			String msg = "Erro ao cadastrar: " + e.getMessage();
-
-			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
-
+			send("Erro ao cadastrar: " + e.getMessage());
 		}
-
 	}
 
 	private void createInitialDir() throws Exception {
-
 		if (fileOp.createDir(activeUser)) {
-
-			String msg = "Seu espaco de armazenamento em nuvem foi criado com sucesso!";
-
-			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
-
-			thisClient.enviar(encMsg);
-
+			send("Seu espaco de armazenamento em nuvem foi criado com sucesso!");
 		}
 	}
 
@@ -307,5 +250,4 @@ public class ClientThread extends Thread {
 		long permissions = rolesDAO.getPermissions(user);
 		return Permissions.getRolesFriendly(permissions);
 	}
-
 }
