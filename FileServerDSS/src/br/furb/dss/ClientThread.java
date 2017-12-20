@@ -172,18 +172,17 @@ public class ClientThread extends Thread {
 			}
 
 			break;
-			
+
 		case "/lsusers":
-			
 			if (requireLogin() && requiredPermission(Permissions.LIST_USERS)) {
-				
-				
-				
-				
+				send("Users:");
+				send(String.join("\n", userDAO.listUsers()));
 			}
-			
 			break;
-			
+
+		case "/descperms":
+			sendDescPerms();
+			break;
 		case "/help":
 			sendHelp();
 			break;
@@ -259,30 +258,36 @@ public class ClientThread extends Thread {
 			send("Erro ao cadastrar: " + e.getMessage());
 		}
 	}
-	
+
 	private void createInitialDir() throws Exception {
 		if (fileOp.createDir(activeUser)) {
 			send("Seu espaco de armazenamento em nuvem foi criado com sucesso!");
 		}
 	}
+
 	private void sendHelp() throws Exception {
-		
-		send("Os comandos sao:\n" + 
-				"/adduser user pass       \t\t--adds an user\n" +
-				"/login user pass         \t\t--login as user\n" +
-				"/write filename content  \t\t--create file (or append if it exists), inserting some content\n" +
-				"/read filename           \t\t--read content of file\n" +
-				"/lsfiles [user]          \t\t--list files of specified user, if no user specified then list own logged user files\n" +
-				"/lsusers                 \t\t--list registered users in the system\n" +
-				"/rmuser [user]           \t\t--remove a specified user, if no user specified then remove own logged user\n" +
-				"/lsperm [user]           \t\t--list permissions of a specified user, if no user specified then list own logged user permissions\n" +
-				"/setperm user perm       \t\t--set permission to a user (/descperms to view possible permissions)\n" +
-				"/rmperm user perm        \t\t--remove permission of specified user (/descperms to view possible permissions)\n" +
-				"/descperms               \t\t--list all possible permissions that can be assigned to users\n" +
-				"/help                    \t\t--print this screen\n" +
-				"/quit                    \t\t--leaves the system");
-		
+
+		send("Os comandos sao:\n" + "/adduser user pass       \t\t--adds an user\n"
+				+ "/login user pass         \t\t--login as user\n"
+				+ "/write filename content  \t\t--create file (or append if it exists), inserting some content\n"
+				+ "/read filename           \t\t--read content of file\n"
+				+ "/rmfile filename [user]  \t\t--remove specified file, if user is specified than remove file of that user\n"
+				+ "/lsfiles [user]          \t\t--list files of specified user, if no user specified then list own logged user files\n"
+				+ "/lsusers                 \t\t--list registered users in the system\n"
+				+ "/rmuser [user]           \t\t--remove a specified user, if no user specified then remove own logged user\n"
+				+ "/lsperm [user]           \t\t--list permissions of a specified user, if no user specified then list own logged user permissions\n"
+				+ "/setperm user perm       \t\t--set permission to a user (/descperms to view possible permissions)\n"
+				+ "/rmperm user perm        \t\t--remove permission of specified user (/descperms to view possible permissions)\n"
+				+ "/descperms               \t\t--list all possible permissions that can be assigned to users\n"
+				+ "/help                    \t\t--print this screen\n"
+				+ "/quit                    \t\t--leaves the system");
+
 	}
+
+	private void sendDescPerms() throws Exception {
+		send(Permissions.descAllPermissionsFriendly());
+	}
+
 	private String getPermissionsAsString(String user) throws SQLException {
 		long permissions = rolesDAO.getPermissions(user);
 		return Permissions.getRolesFriendly(permissions);

@@ -34,6 +34,20 @@ public class Permissions {
 		return rolesFriendly;
 	}
 	
+	public static String descAllPermissionsFriendly() {
+		
+		String perm = "Permissions:\n" +
+					"READ_OTHERS_DIR            \t\t--list files of other users\n" +
+					"REMOVE_OTHERS_DIR          \t\t--remove files of other users\n" +
+					"REMOVE_USER                \t\t--remove other users\n" +
+					"CHANGE_OTHER_PERMISSIONS   \t\t--change permissions of other users\n" +
+					"READ_OTHERS_PERM           \t\t--list permissions of other users\n" +
+					"LIST_USERS                 \t\t--list registered users in the system\n";
+		
+		return perm;
+		
+	}
+	
 	public static boolean checkPermission(long permissions, long required) {
 		return (required & permissions) != 0;
 	}
