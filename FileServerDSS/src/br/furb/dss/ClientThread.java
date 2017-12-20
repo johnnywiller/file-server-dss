@@ -188,6 +188,8 @@ public class ClientThread extends Thread {
 				if(!fileOp.removeFile(tokenized[1], tokenized.length > 2 ? tokenized[2] : this.activeUser)) {
 					send("O arquivo nao existe");
 				}
+				
+				send("Arquivo removido com sucesso!");
 			}
 
 			break;
@@ -214,7 +216,7 @@ public class ClientThread extends Thread {
 					break;
 				}
 
-				rolesDAO.addUserPerm(tokenized[2], Permissions.getPermissionAsLong(tokenized[1]));
+				rolesDAO.addUserPerm(tokenized[1], Permissions.getPermissionAsLong(tokenized[2]));
 				send("Permissoes alteradas com sucesso");
 			}
 			break;
@@ -227,7 +229,7 @@ public class ClientThread extends Thread {
 					break;
 				}
 
-				rolesDAO.rmUserPerm(tokenized[2], Permissions.getPermissionAsLong(tokenized[1]));
+				rolesDAO.rmUserPerm(tokenized[1], Permissions.getPermissionAsLong(tokenized[2]));
 				send("Permissoes alteradas com sucesso");
 			}
 
