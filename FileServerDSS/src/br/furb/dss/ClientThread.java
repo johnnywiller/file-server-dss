@@ -137,7 +137,7 @@ public class ClientThread extends Thread {
 
 				String content = fileOp.readFile(tokenized[1]);
 
-				send("O conteudo do arquivo eh:\n\n");
+				send("O conteudo do arquivo eh:\n");
 				send(content);
 
 			}
