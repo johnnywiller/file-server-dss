@@ -2,6 +2,7 @@ package br.furb.dss;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 import br.furb.dss.db.RolesDAO;
 import br.furb.dss.db.UserDAO;
@@ -10,7 +11,7 @@ public class ClientThread extends Thread {
 
 	private SocketClient thisClient;
 	private MessageEncryptor encryptor;
-
+	private FileOperations fileOp;
 	private ClientKeys keys;
 
 	private UserDAO userDAO;
@@ -37,8 +38,8 @@ public class ClientThread extends Thread {
 
 			String welcome = "Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos\n";
 			welcome += "Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
-					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
-					+ "/removeuser\n" + "/lsperm <user>\n" + "/help\n" + "/quit";
+					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles < - | user>\n" + "/lsusers\n"
+					+ "/removeuser\n" + "/lsperm < - | user>\n" + "/help\n" + "/quit";
 
 			EncryptedMessage encMsg = encryptor.encryptedMessage(welcome);
 
@@ -89,7 +90,7 @@ public class ClientThread extends Thread {
 		if (received == null || received.isEmpty())
 			return;
 
-		String[] tokenized = received.split(" ");
+		String[] tokenized = received.trim().split(" ");
 
 		String msg;
 		EncryptedMessage encMsg;
@@ -131,10 +132,30 @@ public class ClientThread extends Thread {
 
 		case "/write":
 			if (requireLogin()) {
-				
-				
-				
+
 			}
+			break;
+
+		case "/lsfiles":
+			if (requireLogin()) {
+
+				// check if this user is trying to view other user dir without permission
+				if (tokenized[1] != null && !tokenized[1].equalsIgnoreCase(this.activeUser)
+						&& !requiredPermission(Permissions.READ_OTHERS_DIR))
+					break;
+
+				List<String> files = this.fileOp.lsDir(tokenized[1]);
+
+				if (files == null || files.isEmpty())
+					msg = "Nenhum arquivo encontrado";
+				else
+					msg = "Os arquivos sao:\n" + String.join("\n", files);
+
+				encMsg = encryptor.encryptedMessage(msg);
+
+				thisClient.enviar(encMsg);
+			}
+
 			break;
 		case "/help":
 
@@ -159,6 +180,21 @@ public class ClientThread extends Thread {
 
 		}
 
+	}
+
+	private boolean requiredPermission(long required) throws SQLException, IOException, Exception {
+
+		if (!Permissions.checkPermission(rolesDAO.getPermissions(this.activeUser), required)) {
+
+			String msg = "Voce nao tem permissao para este tipo de acesso!";
+
+			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
+
+			return false;
+		}
+		return true;
 	}
 
 	private boolean requireLogin() throws Exception {
@@ -192,14 +228,30 @@ public class ClientThread extends Thread {
 
 		} else {
 
-			String msg = "Voce esta autenticado!\nSuas permissoes sao:\n" + getPermissionsAsString(user);
+			String msg = "Voce esta autenticado!\nSua chave criptografica acaba de ser gerada em runtime\n\nSuas permissoes sao:\n"
+					+ getPermissionsAsString(user);
 
 			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
 
 			thisClient.enviar(encMsg);
 
 			logged = true;
+			activeUser = user;
+			// create the file operations handler
+			loadFileKeys(pass);
+			
+			// tries to create user dir and send a message, if dir is already created from previous login, then no message is sended
+			createInitialDir();
+
 		}
+
+	}
+
+	private void loadFileKeys(String pass) throws Exception {
+
+		byte[] key = this.userDAO.getFileOpKeys(activeUser, pass);
+
+		this.fileOp = new FileOperations(key, activeUser);
 
 	}
 
@@ -227,11 +279,22 @@ public class ClientThread extends Thread {
 
 	}
 
+	private void createInitialDir() throws Exception {
+
+		if (fileOp.createDir(activeUser)) {
+
+			String msg = "Seu espaco de armazenamento em nuvem foi criado com sucesso!";
+
+			EncryptedMessage encMsg = encryptor.encryptedMessage(msg);
+
+			thisClient.enviar(encMsg);
+
+		}
+	}
+
 	private String getPermissionsAsString(String user) throws SQLException {
 		long permissions = rolesDAO.getPermissions(user);
 		return Permissions.getRolesFriendly(permissions);
 	}
-	
-	
-	
+
 }

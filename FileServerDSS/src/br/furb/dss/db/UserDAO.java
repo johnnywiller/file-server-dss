@@ -3,16 +3,25 @@ package br.furb.dss.db;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Base64;
 
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+
 public class UserDAO {
 
 	private final int HASH_ROUNDS = 70_000;
-
+	private static final int ITERATION_COUNT = 65536;
+	private static final int KEY_LENGTH = 256;
+	
 	MessageDigest sha256;
 
 	public UserDAO() throws NoSuchAlgorithmException {
@@ -66,6 +75,15 @@ public class UserDAO {
 		
 	}
 
+	public byte[] getFileOpKeys(String user, String pass) throws Exception {
+		
+		byte[] fileSalt = getFileSalt(user);
+		
+		byte[] fileOpKey = getPBDKFkey(pass, fileSalt);
+		
+		return fileOpKey;
+	}
+	
 	private byte[] generateSalt() {
 
 		byte[] salt = new byte[32];
@@ -89,6 +107,16 @@ public class UserDAO {
 		return hashedPass;
 	}
 
+	private byte[] getPBDKFkey(String pass, byte[] fileSalt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		
+		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+		KeySpec spec = new PBEKeySpec(pass.toCharArray(), fileSalt, ITERATION_COUNT, KEY_LENGTH);
+		SecretKey tmp = factory.generateSecret(spec);
+		SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
+		
+		return secret.getEncoded();
+	}
+	
 	public boolean login(String user, String pass) throws NoSuchAlgorithmException {
 
 		try {
@@ -115,6 +143,30 @@ public class UserDAO {
 
 	}
 
+	private byte[] getFileSalt(String user) throws SQLException {
+
+		PreparedStatement st = Connection.getInstance().getConnection()
+				.prepareStatement("Select FILE_SALT from users where name = ?");
+
+		st.setString(1, user);
+
+		ResultSet rs = st.executeQuery();
+
+		if (!rs.next())
+			return null;
+
+		String salt = rs.getString(1);
+
+		if (salt == null)
+			return null;
+
+		byte[] saltDecoded = Base64.getDecoder().decode(salt.getBytes());
+
+		return saltDecoded;
+
+	}
+
+	
 	private byte[] getSalt(String user) throws SQLException {
 
 		PreparedStatement st = Connection.getInstance().getConnection()
