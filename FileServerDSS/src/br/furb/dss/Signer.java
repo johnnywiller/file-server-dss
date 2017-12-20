@@ -40,15 +40,6 @@ public class Signer {
 		return signature;
 	}
 
-	public boolean verify(byte[] plainText, byte[] signature, byte[] pubKey) throws Exception {
-		PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(pubKey));
-		Signature publicSignature = Signature.getInstance("SHA256withRSA");
-		publicSignature.initVerify(publicKey);
-		publicSignature.update(plainText);
-
-		return publicSignature.verify(signature);
-	}
-
 	private PrivateKey getServerPrivateKey() throws Exception {
 
 		byte[] keyBytes = Files.readAllBytes(Paths.get("/home/ec2-user/private_key.der"));
