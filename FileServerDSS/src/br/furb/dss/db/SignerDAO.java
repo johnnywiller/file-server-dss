@@ -1,6 +1,7 @@
 package br.furb.dss.db;
 
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Arrays;
@@ -11,14 +12,16 @@ import br.furb.dss.Signer;
 public class SignerDAO {
 
 	private static SignerDAO instance;
-
-	private SignerDAO() {
-
+	
+	MessageDigest digest;
+	
+	private SignerDAO() throws NoSuchAlgorithmException {
+		this.digest = MessageDigest.getInstance("SHA-256");
 	}
 
-	public static SignerDAO getInstance() {
+	public static SignerDAO getInstance() throws NoSuchAlgorithmException {
 
-		if (instance == null)
+		if (instance == null) 
 			instance = new SignerDAO();
 
 		return instance;
@@ -51,11 +54,9 @@ public class SignerDAO {
 			concated = concat(concated, permissions);
 			concated = concat(concated, signature_salt);
 
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
 			byte[] signed = Signer.getInstance().sign(digest.digest(concated));
 
-			return signed;
+			return digest.digest(signed);
 		}
 
 		return null;
