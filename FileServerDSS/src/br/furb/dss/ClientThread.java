@@ -143,7 +143,7 @@ public class ClientThread extends Thread {
 				if (tokenized[1] != null && !tokenized[1].equalsIgnoreCase(this.activeUser)
 						&& !requiredPermission(Permissions.READ_OTHERS_DIR))
 					break;
-
+				
 				List<String> files = this.fileOp.lsDir(tokenized[1]);
 
 				if (files == null || files.isEmpty())
@@ -235,8 +235,8 @@ public class ClientThread extends Thread {
 
 			thisClient.enviar(encMsg);
 
-			logged = true;
-			activeUser = user;
+			this.logged = true;
+			this.activeUser = user;
 			// create the file operations handler
 			loadFileKeys(pass);
 			
