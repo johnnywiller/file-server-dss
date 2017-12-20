@@ -34,7 +34,7 @@ public class UserDAO {
 	}
 
 	private boolean checkPasswordStrength(String pass) {
-		return pass.matches("^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8}$");
+		return pass.matches("^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$");
 	}
 	
 	public void removeUser(String user) throws SQLException {
@@ -60,7 +60,7 @@ public class UserDAO {
 		
 		if (!checkPasswordStrength(pass)) {
 			throw new Exception("Senha nao atende aos requisitos minimos:\n" + "2 letra maiusculas\n"
-					+ "1 caractere especial\n" + "2 numeros\n" + "3 letras minusculas\n" + "Comprimento 8");
+					+ "1 caractere especial\n" + "2 numeros\n" + "3 letras minusculas\n" + "Comprimento minimo 8");
 		}
 
 		// verify if exists a hash with this user, if yes user can't be added twice
