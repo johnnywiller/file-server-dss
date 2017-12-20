@@ -175,6 +175,18 @@ public class ClientThread extends Thread {
 			}
 
 			break;
+			
+		case "/lsusers":
+			
+			if (requireLogin() && requiredPermission(Permissions.LIST_USERS)) {
+				
+				
+				
+				
+			}
+			
+			break;
+			
 		case "/help":
 			send("Os comandos sao:\n" + "/adduser <user> <pass>\n" + "/login <user> <pass>\n"
 					+ "/write <filename> <content>\n" + "/read <filename>\n" + "/lsfiles <user>\n" + "/lsusers\n"
