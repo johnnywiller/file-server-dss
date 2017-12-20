@@ -90,7 +90,7 @@ public class ClientThread extends Thread {
 		case "/login":
 
 			if (tokenized.length < 3) {
-				send("Sintaxe invalida, digite /login <user> <pass>");
+				send("Sintaxe invalida, digite /login user pass");
 				break;
 			}
 			doLogin(tokenized[1], tokenized[2]);
@@ -99,7 +99,7 @@ public class ClientThread extends Thread {
 		case "/adduser":
 
 			if (tokenized.length < 3) {
-				send("Sintaxe invalida, digite /adduser <user> <pass>");
+				send("Sintaxe invalida, digite /adduser user pass");
 				break;
 			}
 
@@ -110,7 +110,7 @@ public class ClientThread extends Thread {
 			if (requireLogin()) {
 
 				if (tokenized.length < 3) {
-					send("Sintaxe invalida, digite /write <filename> <content>");
+					send("Sintaxe invalida, digite /write filename content");
 					break;
 				}
 
@@ -128,7 +128,7 @@ public class ClientThread extends Thread {
 			if (requireLogin()) {
 
 				if (tokenized.length < 2) {
-					send("Sintaxe invalida, digite /read <filename>");
+					send("Sintaxe invalida, digite /read filename");
 					break;
 				}
 
@@ -169,6 +169,66 @@ public class ClientThread extends Thread {
 				send("As permissoes sao:\n");
 				send(getPermissionsAsString(tokenized.length < 2 ? this.activeUser : tokenized[1]));
 
+			}
+
+			break;
+	
+		case "/rmfile":
+
+			if (requireLogin()) {
+				if (tokenized.length < 2) {
+					send("Sintaxe invalida, digite /rmfile filename [user]");
+					break;
+				}
+
+				if (tokenized.length > 2 && !tokenized[2].equalsIgnoreCase(this.activeUser)
+						&& !requiredPermission(Permissions.READ_OTHERS_DIR))
+					break;
+
+				if(!fileOp.removeFile(tokenized[1], tokenized.length > 2 ? tokenized[2] : this.activeUser)) {
+					send("O arquivo nao existe");
+				}
+			}
+
+			break;
+
+		case "/rmuser":
+
+			if (requireLogin()) {
+				if (tokenized.length > 1 && !tokenized[1].equalsIgnoreCase(this.activeUser)
+						&& !requiredPermission(Permissions.REMOVE_USER))
+					break;
+
+				userDAO.removeUser(tokenized.length > 1 ? tokenized[1] : this.activeUser);
+				fileOp.removeDir(tokenized.length > 1 ? tokenized[1] : this.activeUser);
+
+				send("Usuario removido com sucesso!");
+			}
+			break;
+
+		case "/setperm":
+
+			if (requireLogin() && requiredPermission(Permissions.CHANGE_OTHER_PERMISSIONS)) {
+				if (tokenized.length < 3) {
+					send("Sintaxe invalida, digite /setperm user perm");
+					break;
+				}
+
+				rolesDAO.addUserPerm(tokenized[2], Permissions.getPermissionAsLong(tokenized[1]));
+				send("Permissoes alteradas com sucesso");
+			}
+			break;
+
+		case "/rmperm":
+
+			if (requireLogin() && requiredPermission(Permissions.CHANGE_OTHER_PERMISSIONS)) {
+				if (tokenized.length < 3) {
+					send("Sintaxe invalida, digite /rmperm user perm");
+					break;
+				}
+
+				rolesDAO.rmUserPerm(tokenized[2], Permissions.getPermissionAsLong(tokenized[1]));
+				send("Permissoes alteradas com sucesso");
 			}
 
 			break;
@@ -251,6 +311,7 @@ public class ClientThread extends Thread {
 	}
 
 	private void addUser(String user, String pass) throws Exception {
+		
 		try {
 			userDAO.addUser(user, pass);
 			send("Usuario cadastrado com sucesso! faca login para utilizar os servicos");

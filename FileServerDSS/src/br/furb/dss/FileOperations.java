@@ -1,11 +1,8 @@
 package br.furb.dss;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -103,7 +100,7 @@ public class FileOperations {
 
 		} catch (Exception e) {
 			throw new Exception("Nao foi possivel descriptografar o arquivo."
-					+ "\nProvavelmente o arquivo foi alterado ou esta corrompido!" );		
+					+ "\nProvavelmente o arquivo foi alterado ou esta corrompido!");
 		}
 
 		if (!checkFileIntegrity(hash, iv, decryptedContent)) {
@@ -161,7 +158,7 @@ public class FileOperations {
 	public String readFile(String filename) throws Exception {
 
 		// try to protect against directory traversal
-		if (user.contains("./") || user.contains("../"))
+		if (filename.contains("./") || filename.contains("../"))
 			return "";
 
 		File f = new File(baseDir + user + "/" + filename);
@@ -176,10 +173,37 @@ public class FileOperations {
 		return "";
 	}
 
-	public boolean createOrUpdateFile(String filename, String content) throws Exception {
+	public boolean removeFile(String filename, String user) {
+
+		// try to protect against directory traversal
+		if (filename.contains("./") || filename.contains("../") || user.contains("./") || user.contains("../"))
+			return false;
+
+		File f = new File(baseDir + user + "/" + filename);
+
+		return f.delete();
+	}
+
+	public void removeDir(String user) {
 
 		// try to protect against directory traversal
 		if (user.contains("./") || user.contains("../"))
+			return;
+
+		File file = new File(baseDir + user);
+
+		if (file.isDirectory()) {
+			for (File f : file.listFiles()) {
+				f.delete();
+			}
+			file.delete();
+		}
+	}
+	
+	public boolean createOrUpdateFile(String filename, String content) throws Exception {
+
+		// try to protect against directory traversal
+		if (filename.contains("./") || filename.contains("../"))
 			return false;
 
 		File f = new File(baseDir + user + "/" + filename);

@@ -48,6 +48,25 @@ public class Permissions {
 		
 	}
 	
+	public static long getPermissionAsLong(String perm) {
+
+		switch (perm.toUpperCase()) {
+		case "READ_OTHERS_DIR":
+			return READ_OTHERS_DIR;
+		case "REMOVE_OTHERS_DIR":
+			return REMOVE_OTHERS_DIR;
+		case "REMOVE_USER":
+			return REMOVE_USER;
+		case "CHANGE_OTHER_PERMISSIONS":
+			return CHANGE_OTHER_PERMISSIONS;
+		case "READ_OTHERS_PERM":
+			return READ_OTHERS_PERM;
+		case "LIST_USERS":
+			return LIST_USERS;
+		}
+		return 0;
+	}
+
 	public static boolean checkPermission(long permissions, long required) {
 		return (required & permissions) != 0;
 	}

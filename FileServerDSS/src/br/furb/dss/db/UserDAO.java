@@ -1,5 +1,6 @@
 package br.furb.dss.db;
 
+import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -35,12 +36,28 @@ public class UserDAO {
 	private boolean checkPasswordStrength(String pass) {
 		return pass.matches("^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8}$");
 	}
+	
+	public void removeUser(String user) throws SQLException {
 
+		PreparedStatement st = Connection.getInstance().getConnection()
+				.prepareStatement("delete from users where name = ?");
+		
+		st.setString(1, user);
+		st.executeUpdate();
+		
+		
+	}
+	
+	
 	public void addUser(String user, String pass) throws Exception {
 
 		if (user == null || pass == null || user.trim().isEmpty() || pass.trim().isEmpty())
 			throw new Exception("Usuario e/ou senha nao podem estar em braco");
 
+		// check against directory traversal
+		if (user.contains("./") || user.contains("../"))
+			throw new Exception("Nomes de usuario nao podem conter ./");
+		
 		if (!checkPasswordStrength(pass)) {
 			throw new Exception("Senha nao atende aos requisitos minimos:\n" + "2 letra maiusculas\n"
 					+ "1 caractere especial\n" + "2 numeros\n" + "3 letras minusculas\n" + "Comprimento 8");

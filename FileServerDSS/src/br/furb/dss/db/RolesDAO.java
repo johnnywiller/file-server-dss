@@ -22,5 +22,38 @@ public class RolesDAO {
 
 		return permissions;
 	}
+	
+	
+	public void addUserPerm(String user, long perm) throws SQLException {
+		
+		long actualPerm = getPermissions(user);
+		
+		long newPerm = actualPerm | perm;
+		
+		PreparedStatement st = Connection.getInstance().getConnection()
+				.prepareStatement("update users set permissions = ?");
+
+		st.setLong(1, newPerm);
+
+		st.executeUpdate();
+		
+	}
+	
+	public void rmUserPerm(String user, long perm) throws SQLException {
+		
+		long actualPerm = getPermissions(user);
+		
+		// subtract a mask permission 
+		long newPerm = actualPerm ^ (actualPerm & perm);
+		
+		PreparedStatement st = Connection.getInstance().getConnection()
+				.prepareStatement("update users set permissions = ?");
+
+		st.setLong(1, newPerm);
+
+		st.executeUpdate();
+		
+	}
+	
 
 }
