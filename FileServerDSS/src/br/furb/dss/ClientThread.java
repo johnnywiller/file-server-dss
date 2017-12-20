@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import br.furb.dss.db.RolesDAO;
+import br.furb.dss.db.SignerDAO;
 import br.furb.dss.db.UserDAO;
 
 public class ClientThread extends Thread {
@@ -35,7 +36,7 @@ public class ClientThread extends Thread {
 
 			this.userDAO = new UserDAO();
 			this.rolesDAO = new RolesDAO();
-
+			
 			send("Seja bem vindo, por favor faca login ou registre-se para utilizar os servicos\n");
 			sendHelp();
 
@@ -292,7 +293,13 @@ public class ClientThread extends Thread {
 			send("Usuario ou senha invalidos, caso deseja cadastrar um novo usuario digite /adduser <user> <pass>");
 			return;
 		} else {
-
+			
+			// check if users row is OK
+			if (!SignerDAO.getInstance().checkRowIntegrity(user)) {				
+				send("ERRO: A INTEGRIDADE DOS SEUS DADOS NO DATABASE NAO PODE SER CONFIRMADA, ALGUEM ALTEROU OS DADOS OU A BASE FOI CORROMPIDA!");
+				return;			
+			}
+			
 			send("Voce esta autenticado!\nSua chave criptografica acaba de ser gerada em runtime\n\nSuas permissoes sao:\n"
 					+ getPermissionsAsString(user));
 

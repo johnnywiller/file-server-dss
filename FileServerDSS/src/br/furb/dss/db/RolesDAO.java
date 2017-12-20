@@ -24,7 +24,7 @@ public class RolesDAO {
 	}
 	
 	
-	public void addUserPerm(String user, long perm) throws SQLException {
+	public void addUserPerm(String user, long perm) throws Exception {
 		
 		long actualPerm = getPermissions(user);
 		
@@ -38,9 +38,11 @@ public class RolesDAO {
 
 		st.executeUpdate();
 		
+		SignerDAO.getInstance().updateRowSignature(user);
+		
 	}
 	
-	public void rmUserPerm(String user, long perm) throws SQLException {
+	public void rmUserPerm(String user, long perm) throws Exception {
 		
 		long actualPerm = getPermissions(user);
 		
@@ -54,7 +56,7 @@ public class RolesDAO {
 
 		st.executeUpdate();
 		
+		SignerDAO.getInstance().updateRowSignature(user);
+		
 	}
-	
-
 }

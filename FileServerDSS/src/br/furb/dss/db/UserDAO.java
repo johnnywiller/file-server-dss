@@ -1,6 +1,5 @@
 package br.furb.dss.db;
 
-import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -18,8 +17,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import com.mysql.fabric.xmlrpc.base.Array;
 
 public class UserDAO {
 
@@ -72,23 +69,29 @@ public class UserDAO {
 		byte[] salt = generateSalt();
 		byte[] hashed = getHashedPass(pass, salt);
 		byte[] fileSalt = generateSalt();
+		byte[] signatureSalt = generateSalt();
+		
 		long permissions = 0;
-
-		String signature = "dummy signature";
 
 		String baseSalt = Base64.getEncoder().encodeToString(salt);
 		String baseHashed = Base64.getEncoder().encodeToString(hashed);
 		String baseFileSalt = Base64.getEncoder().encodeToString(fileSalt);
+		String baseSignatureSalt = Base64.getEncoder().encodeToString(signatureSalt);
+		
+		byte[] signature = SignerDAO.getInstance().computeRowFingerPrint(user);
 
+		String baseSignature = Base64.getEncoder().encodeToString(signature);
+		
 		PreparedStatement st = Connection.getInstance().getConnection().prepareStatement("insert into users "
-				+ "(name,hash_pass,salt,file_salt,permissions,signature_row)" + " values (?,?,?,?,?,?)");
+				+ "(name,hash_pass,salt,file_salt,permissions,signature_row,signature_salt)" + " values (?,?,?,?,?,?,?)");
 
 		st.setString(1, user);
 		st.setString(2, baseHashed);
 		st.setString(3, baseSalt);
 		st.setString(4, baseFileSalt);
 		st.setLong(5, permissions);
-		st.setString(6, signature);
+		st.setString(6, baseSignature);
+		st.setString(7, baseSignatureSalt);
 
 		st.executeUpdate();
 
