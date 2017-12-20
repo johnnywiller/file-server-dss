@@ -88,16 +88,23 @@ public class FileOperations {
 		byte[] content;
 		byte[] decryptedContent;
 
-		hash = Arrays.copyOf(allBytes, 32);
-		iv = Arrays.copyOfRange(allBytes, hash.length, hash.length + 16);
-		content = Arrays.copyOfRange(allBytes, hash.length + iv.length, allBytes.length);
+		try {
 
-		SecretKeySpec secretKeySpec = new SecretKeySpec(symmetricKey, "AES");
-		IvParameterSpec ivSpec = new IvParameterSpec(iv);
+			hash = Arrays.copyOf(allBytes, 32);
+			iv = Arrays.copyOfRange(allBytes, hash.length, hash.length + 16);
+			content = Arrays.copyOfRange(allBytes, hash.length + iv.length, allBytes.length);
 
-		cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivSpec);
+			SecretKeySpec secretKeySpec = new SecretKeySpec(symmetricKey, "AES");
+			IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
-		decryptedContent = cipher.doFinal(content);
+			cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivSpec);
+
+			decryptedContent = cipher.doFinal(content);
+
+		} catch (Exception e) {
+			throw new Exception("Nao foi possivel descriptografar o arquivo."
+					+ "\nProvavelmente o arquivo foi alterado ou esta corrompido!");
+		}
 
 		if (!checkFileIntegrity(hash, iv, decryptedContent)) {
 			throw new Exception("Nao foi possivel verificar a integridade ou autenticidade do arquivo."
