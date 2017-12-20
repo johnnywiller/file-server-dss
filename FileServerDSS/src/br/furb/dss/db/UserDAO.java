@@ -78,9 +78,9 @@ public class UserDAO {
 		String baseFileSalt = Base64.getEncoder().encodeToString(fileSalt);
 		String baseSignatureSalt = Base64.getEncoder().encodeToString(signatureSalt);
 		
-		byte[] signature = SignerDAO.getInstance().computeRowFingerPrint(user);
+		//byte[] signature = SignerDAO.getInstance().computeRowFingerPrint(user);
 
-		String baseSignature = Base64.getEncoder().encodeToString(signature);
+		//String baseSignature = Base64.getEncoder().encodeToString(signature);
 		
 		PreparedStatement st = Connection.getInstance().getConnection().prepareStatement("insert into users "
 				+ "(name,hash_pass,salt,file_salt,permissions,signature_row,signature_salt)" + " values (?,?,?,?,?,?,?)");
@@ -90,11 +90,13 @@ public class UserDAO {
 		st.setString(3, baseSalt);
 		st.setString(4, baseFileSalt);
 		st.setLong(5, permissions);
-		st.setString(6, baseSignature);
+		st.setString(6, "dummy signature");
 		st.setString(7, baseSignatureSalt);
 
 		st.executeUpdate();
-
+		
+		SignerDAO.getInstance().updateRowSignature(user);
+		
 	}
 
 	public byte[] getFileOpKeys(String user, String pass) throws Exception {
