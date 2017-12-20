@@ -11,15 +11,9 @@ public class ClientSessionInitiation {
 
 	private DiffieHellmanUitls dh = new DiffieHellmanUitls();
 	private SocketClient client;
-	private static ClientSessionInitiation instance;
 
 	public static ClientSessionInitiation getInstance(SocketClient client) {
-
-		if (instance == null)
-			instance = new ClientSessionInitiation(client);
-
-		return instance;
-
+		return new ClientSessionInitiation(client);
 	}
 
 	private ClientSessionInitiation(SocketClient client) {
