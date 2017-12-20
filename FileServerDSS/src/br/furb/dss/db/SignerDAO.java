@@ -25,11 +25,15 @@ public class SignerDAO {
 			byte[] file_salt = rs.getBytes(5);
 			byte[] permissions = rs.getBytes(6);
 			
-			
-			
+			System.out.println(id.length);
+			System.out.println(name.length);
+			System.out.println(hash_pass.length);
+			System.out.println(salt.length);
+			System.out.println(file_salt.length);
+			System.out.println(permissions.length);
 		}
 		
-		
+		System.out.println("nao achou");
 	}
 	
 }
