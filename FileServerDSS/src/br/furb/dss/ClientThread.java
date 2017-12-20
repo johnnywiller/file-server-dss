@@ -268,19 +268,19 @@ public class ClientThread extends Thread {
 	private void sendHelp() throws Exception {
 		
 		send("Os comandos sao:\n" + 
-				"/adduser user pass\t--adds an user\n" +
-				"/login user pass\t--login as user\n" +
-				"/write filename content\t--create file (or append if it exists), inserting some content\n" +
-				"/read filename\t--read content of file\n" +
-				"/lsfiles [user]\t--list files of specified user, if no user specified then list own logged user files\n" +
-				"/lsusers\t--list registered users in the system\n" +
-				"/rmuser [user]\t--remove a specified user, if no user specified then remove own logged user\n" +
-				"/lsperm [user]\t--list permissions of a specified user, if no user specified then list own logged user permissions\n" +
-				"/setperm user perm\t--set permission to a user (/descperms to view possible permissions)\n" +
-				"/rmperm user perm\t--remove permission of specified user (/descperms to view possible permissions)\n" +
-				"/descperms\t--list all possible permissions that can be assigned to users\n" +
-				"/help\t--print this screen\n" +
-				"/quit\t--leaves the system");
+				"/adduser user pass       \t\t--adds an user\n" +
+				"/login user pass         \t\t--login as user\n" +
+				"/write filename content  \t\t--create file (or append if it exists), inserting some content\n" +
+				"/read filename           \t\t--read content of file\n" +
+				"/lsfiles [user]          \t\t--list files of specified user, if no user specified then list own logged user files\n" +
+				"/lsusers                 \t\t--list registered users in the system\n" +
+				"/rmuser [user]           \t\t--remove a specified user, if no user specified then remove own logged user\n" +
+				"/lsperm [user]           \t\t--list permissions of a specified user, if no user specified then list own logged user permissions\n" +
+				"/setperm user perm       \t\t--set permission to a user (/descperms to view possible permissions)\n" +
+				"/rmperm user perm        \t\t--remove permission of specified user (/descperms to view possible permissions)\n" +
+				"/descperms               \t\t--list all possible permissions that can be assigned to users\n" +
+				"/help                    \t\t--print this screen\n" +
+				"/quit                    \t\t--leaves the system");
 		
 	}
 	private String getPermissionsAsString(String user) throws SQLException {
