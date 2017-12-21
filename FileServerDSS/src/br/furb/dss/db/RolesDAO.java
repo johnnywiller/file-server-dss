@@ -50,10 +50,11 @@ public class RolesDAO {
 		long newPerm = actualPerm ^ (actualPerm & perm);
 		
 		PreparedStatement st = Connection.getInstance().getConnection()
-				.prepareStatement("update users set permissions = ?");
+				.prepareStatement("update users set permissions = ? where name = ?");
 
 		st.setLong(1, newPerm);
-
+		st.setString(2, user);
+		
 		st.executeUpdate();
 		
 		SignerDAO.getInstance().updateRowSignature(user);
