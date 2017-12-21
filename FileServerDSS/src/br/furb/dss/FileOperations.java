@@ -159,7 +159,7 @@ public class FileOperations {
 
 		// try to protect against directory traversal
 		if (filename.contains("./") || filename.contains("../"))
-			return "";
+			return null;
 
 		File f = new File(baseDir + user + "/" + filename);
 
@@ -170,7 +170,7 @@ public class FileOperations {
 			return new String(fileContent);
 		}
 
-		return "";
+		return null;
 	}
 
 	public boolean removeFile(String filename, String user) {

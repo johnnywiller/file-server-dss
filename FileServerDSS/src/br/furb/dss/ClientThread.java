@@ -138,10 +138,13 @@ public class ClientThread extends Thread {
 				}
 
 				String content = fileOp.readFile(tokenized[1]);
-
-				send("O conteudo do arquivo eh:\n");
-				send(content);
-
+				
+				if (content == null) {
+					send("O arquivo nao existe!");
+				} else {
+					send("O conteudo do arquivo eh:\n");
+					send(content);
+				}
 			}
 			break;
 
