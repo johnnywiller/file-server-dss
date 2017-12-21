@@ -31,7 +31,7 @@ public class RolesDAO {
 		long newPerm = actualPerm | perm;
 		
 		PreparedStatement st = Connection.getInstance().getConnection()
-				.prepareStatement("update users set permissions = ? where user = ?");
+				.prepareStatement("update users set permissions = ? where name = ?");
 
 		st.setLong(1, newPerm);
 		st.setString(2, user);
