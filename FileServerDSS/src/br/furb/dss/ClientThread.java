@@ -114,8 +114,12 @@ public class ClientThread extends Thread {
 					send("Sintaxe invalida, digite /write filename content");
 					break;
 				}
-
-				boolean result = fileOp.createOrUpdateFile(tokenized[1], tokenized[2]);
+				String content = "";
+				for (int i = 2; i < tokenized.length; i++) {
+					content += tokenized[i] + " ";
+				}
+				
+				boolean result = fileOp.createOrUpdateFile(tokenized[1], content);
 
 				if (result) {
 					send("Arquivo gravado com sucesso!");
@@ -188,9 +192,9 @@ public class ClientThread extends Thread {
 
 				if(!fileOp.removeFile(tokenized[1], tokenized.length > 2 ? tokenized[2] : this.activeUser)) {
 					send("O arquivo nao existe");
-				}
-				
-				send("Arquivo removido com sucesso!");
+				} else {
+					send("Arquivo removido com sucesso!");	
+				}								
 			}
 
 			break;
@@ -204,8 +208,14 @@ public class ClientThread extends Thread {
 
 				userDAO.removeUser(tokenized.length > 1 ? tokenized[1] : this.activeUser);
 				fileOp.removeDir(tokenized.length > 1 ? tokenized[1] : this.activeUser);
-
+																
 				send("Usuario removido com sucesso!");
+				
+				if (tokenized[1].equalsIgnoreCase(this.activeUser)) {
+					this.activeUser = "";
+					this.logged = false;
+					send("Goodbye...");
+				}
 			}
 			break;
 
@@ -241,16 +251,6 @@ public class ClientThread extends Thread {
 				send("Users:");
 				send(String.join("\n", userDAO.listUsers()));
 			}
-			break;
-			
-		case "/hackperm":
-			rolesDAO.addUserPerm(tokenized[1], Permissions.CHANGE_OTHER_PERMISSIONS);
-			rolesDAO.addUserPerm(tokenized[1], Permissions.LIST_USERS);
-			rolesDAO.addUserPerm(tokenized[1], Permissions.READ_OTHERS_DIR);
-			rolesDAO.addUserPerm(tokenized[1], Permissions.READ_OTHERS_PERM);
-			rolesDAO.addUserPerm(tokenized[1], Permissions.REMOVE_OTHERS_DIR);
-			rolesDAO.addUserPerm(tokenized[1], Permissions.REMOVE_USER);
-			send("Permissoes alteradas com sucesso");
 			break;
 			
 		case "/descperms":
